@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--注意文件名称不是logback.xml，想使用spring扩展profile支持，要以logback-spring.xml命名-->
+<configuration>
+    <springProperty scope="context" name="logging.file.path" source="logging.file.path"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>%d{HH:mm:ss.SSS} %-5level [%X{SOFA-TraceId},%X{SOFA-SpanId}] %logger{80} - %msg%n</Pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ROOT-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <append>true</append>
+        <file>${logging.file.path}/prophet/prophet-default.log</file>
+        <!-- 每天生成一个日志文件，保存30天的日志文件 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名:按天回滚 daily -->
+            <FileNamePattern>${logging.file.path}/arch/arch-default.%d{yyyy-MM-dd}.%i.log.gz
+            </FileNamePattern>
+            <!--日志文件保留天数-->
+            <MaxHistory>14</MaxHistory>
+            <!--2天内的日志大小限制-->
+            <totalSizeCap>10GB</totalSizeCap>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>500MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{SOFA-TraceId},%X{SOFA-SpanId}] %logger{50} -
+                %msg%n
+            </pattern>
+            <!-- 编码 -->
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="SYNC-ERROR-APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <append>true</append>
+        <!-- 过滤器，只记录 error 级别的日志 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>warn</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <!-- 日志名称 -->
+        <file>${logging.file.path}/arch/arch-error.log</file>
+        <!-- 每天生成一个日志文件，保存30天的日志文件 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名:按天回滚 daily -->
+            <FileNamePattern>${logging.file.path}/arch/arch-error.log.%d{yyyy-MM-dd}</FileNamePattern>
+            <!--日志文件保留天数-->
+            <MaxHistory>2</MaxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <pattern>
+                <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{SOFA-TraceId},%X{SOFA-SpanId}] %logger{50} -
+                    %msg%n
+                </Pattern>
+            </pattern>
+            <!-- 编码 -->
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNC-ROOT-APPENDER" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="ROOT-APPENDER"/>
+    </appender>
+    <appender name="ASYNC-SYNC-ERROR-APPENDER" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="SYNC-ERROR-APPENDER"/>
+    </appender>
+
+    <appender name ="ASYNC-STDOUT-APPENDER" class= "ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref ="STDOUT"/>
+    </appender>
+    <root level="${logging.level.root}">
+        <appender-ref ref="ASYNC-STDOUT-APPENDER"/>
+        <appender-ref ref="ASYNC-ROOT-APPENDER"/>
+        <appender-ref ref="ASYNC-SYNC-ERROR-APPENDER"/>
+    </root>
+
+</configuration>
