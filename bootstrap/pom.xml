@@ -16,6 +16,25 @@
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.arch</groupId>
+            <artifactId>intergration</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.arch</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.arch</groupId>
+            <artifactId>biz</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.arch</groupId>
+            <artifactId>facade</artifactId>
+        </dependency>
+    </dependencies>
+
     <build>
         <finalName>${dist.fileName}</finalName>
         <pluginManagement>
